@@ -38,3 +38,8 @@ enum API {
         try! AppConfig.value(for: "API_KEY")
     }
 }
+
+enum Constants {
+    static let appVersion: String = try! AppConfig.value(for: "APP_VERSION")
+    static let buildNumber: String = try! AppConfig.value(for: "BUILD_NUMBER")
+}

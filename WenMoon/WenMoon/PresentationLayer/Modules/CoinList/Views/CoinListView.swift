@@ -14,7 +14,6 @@ struct CoinListView: View {
     @State private var isEditMode: EditMode = .inactive
     @State private var chartDrawProgress: CGFloat = .zero
     @State private var shouldShowAddCoinView = false
-    @State private var showErrorAlert = false
     @State private var showSetPriceAlertConfirmation = false
     @State private var capturedCoin: CoinData?
     @State private var targetPrice: Double?
@@ -25,34 +24,36 @@ struct CoinListView: View {
     
     // MARK: - Body
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(viewModel.coins, id: \.self) { coin in
-                    makeCoinView(coin)
-                }
-                .onMove(perform: moveCoin)
-                
-                Button(action: {
-                    shouldShowAddCoinView.toggle()
-                }) {
-                    HStack {
-                        Image(systemName: "slider.horizontal.3")
-                        Text("Add Coins")
+        BaseView(errorMessage: $viewModel.errorMessage) {
+            NavigationView {
+                List {
+                    ForEach(viewModel.coins, id: \.self) { coin in
+                        makeCoinView(coin)
                     }
-                    .frame(maxWidth: .infinity)
+                    .onMove(perform: moveCoin)
+                    
+                    Button(action: {
+                        shouldShowAddCoinView.toggle()
+                    }) {
+                        HStack {
+                            Image(systemName: "slider.horizontal.3")
+                            Text("Add Coins")
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .listRowSeparator(.hidden)
+                    .buttonStyle(.borderless)
                 }
-                .listRowSeparator(.hidden)
-                .buttonStyle(.borderless)
-            }
-            .listStyle(.plain)
-            .environment(\.editMode, $isEditMode)
-            .animation(.default, value: viewModel.coins)
-            .refreshable {
-                Task {
-                    await viewModel.fetchMarketData()
+                .listStyle(.plain)
+                .environment(\.editMode, $isEditMode)
+                .animation(.default, value: viewModel.coins)
+                .refreshable {
+                    Task {
+                        await viewModel.fetchMarketData()
+                    }
                 }
+                .navigationTitle("Coins")
             }
-            .navigationTitle("Coins")
         }
         .sheet(isPresented: $shouldShowAddCoinView) {
             AddCoinView(didToggleCoin: handleCoinSelection)
@@ -63,9 +64,6 @@ struct CoinListView: View {
             CoinDetailsView(coin: coin, chartData: viewModel.chartData[coin.symbol] ?? [:])
                 .presentationDetents([.medium])
                 .presentationCornerRadius(36)
-        }
-        .alert(viewModel.errorMessage ?? "", isPresented: $showErrorAlert) {
-            Button("OK", role: .cancel) { }
         }
         .alert("Set Price Alert", isPresented: $showSetPriceAlertConfirmation, actions: {
             TextField("Target Price", value: $targetPrice, format: .number)
@@ -92,9 +90,6 @@ struct CoinListView: View {
             if let coinID = notification.userInfo?["coinID"] as? String {
                 viewModel.toggleOffPriceAlert(for: coinID)
             }
-        }
-        .onChange(of: viewModel.errorMessage) { _, errorMessage in
-            showErrorAlert = errorMessage != nil
         }
         .task {
             await viewModel.fetchCoins()

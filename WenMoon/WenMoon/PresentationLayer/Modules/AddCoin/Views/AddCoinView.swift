@@ -13,60 +13,51 @@ struct AddCoinView: View {
     @StateObject private var viewModel = AddCoinViewModel()
     
     @State private var searchText = ""
-    @State private var showErrorAlert = false
     
     private(set) var didToggleCoin: ((Coin, Bool) -> Void)?
     
     // MARK: - Body
     var body: some View {
-        NavigationView {
-            ZStack {
-                List {
-                    ForEach(viewModel.coins, id: \.self) { coin in
-                        makeCoinView(coin)
-                            .task {
-                                await viewModel.fetchCoinsOnNextPageIfNeeded(coin)
-                            }
-                    }
-                }
-                .listStyle(.plain)
-                .navigationTitle("Add Coins")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Close") {
-                            dismiss()
+        BaseView(errorMessage: $viewModel.errorMessage) {
+            NavigationView {
+                ZStack {
+                    List {
+                        ForEach(viewModel.coins, id: \.self) { coin in
+                            makeCoinView(coin)
+                                .task {
+                                    await viewModel.fetchCoinsOnNextPageIfNeeded(coin)
+                                }
                         }
                     }
-                }
-                .searchable(text: $searchText, placement: .toolbar, prompt: "e.g. Bitcoin")
-                .scrollDismissesKeyboard(.immediately)
-                
-                if viewModel.isLoading {
-                    ProgressView()
-                }
-            }
-            .alert(isPresented: $showErrorAlert) {
-                Alert(
-                    title: Text("Error"),
-                    message: Text(viewModel.errorMessage!),
-                    dismissButton: .default(Text("OK"))
-                )
-            }
-            .onChange(of: searchText) { _, query in
-                Task {
-                    await viewModel.handleSearchInput(query)
+                    .listStyle(.plain)
+                    .navigationTitle("Add Coins")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Close") {
+                                dismiss()
+                            }
+                        }
+                    }
+                    .searchable(text: $searchText, placement: .toolbar, prompt: "e.g. Bitcoin")
+                    .scrollDismissesKeyboard(.immediately)
+                    
+                    if viewModel.isLoading {
+                        ProgressView()
+                    }
                 }
             }
-            .onChange(of: viewModel.errorMessage) { _, errorMessage in
-                showErrorAlert = errorMessage != nil
+        }
+        .onChange(of: searchText) { _, query in
+            Task {
+                await viewModel.handleSearchInput(query)
             }
-            .task {
-                await viewModel.fetchCoins()
-            }
-            .onAppear {
-                viewModel.fetchSavedCoins()
-            }
+        }
+        .task {
+            await viewModel.fetchCoins()
+        }
+        .onAppear {
+            viewModel.fetchSavedCoins()
         }
     }
     

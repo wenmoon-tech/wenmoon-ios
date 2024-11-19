@@ -10,10 +10,11 @@ import UserNotifications
 
 @main
 struct WenMoonApp: App {
-    
+    // MARK: - Properties
     @Environment(\.scenePhase) var scenePhase
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
+    // MARK: - Body
     var body: some Scene {
         WindowGroup {
             ContentView()

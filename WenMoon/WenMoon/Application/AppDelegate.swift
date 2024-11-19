@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import FirebaseCore
+import GoogleSignIn
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     // MARK: - Properties
@@ -18,7 +20,16 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
         userDefaultsManager = UserDefaultsManagerImpl()
         registerForPushNotifications()
+        FirebaseApp.configure()
         return true
+    }
+    
+    func application(
+        _ app: UIApplication,
+        open url: URL,
+        options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+    ) -> Bool {
+        GIDSignIn.sharedInstance.handle(url)
     }
     
     func resetBadgeNumber() {

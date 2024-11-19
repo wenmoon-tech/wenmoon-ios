@@ -4,8 +4,31 @@
 <dict>
 	<key>API_KEY</key>
 	<string>$(API_KEY)</string>
+	<key>APP_VERSION</key>
+	<string>$(APP_VERSION)</string>
 	<key>BASE_URL</key>
 	<string>$(BASE_URL)</string>
+	<key>BUILD_NUMBER</key>
+	<string>$(BUILD_NUMBER)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.191177800943-anb6rnh9p1jkmv0p5lb66gmr7memhjns</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>app-1-191177800943-ios-4d62eb58f486b5b0122f1a</string>
+			</array>
+		</dict>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
