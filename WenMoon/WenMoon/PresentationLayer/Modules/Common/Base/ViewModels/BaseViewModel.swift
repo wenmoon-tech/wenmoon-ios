@@ -13,21 +13,19 @@ class BaseViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isLoading = false
     
-    private(set) var swiftDataManager: SwiftDataManager?
-    private(set) var userDefaultsManager: UserDefaultsManager?
+    private(set) var swiftDataManager: SwiftDataManager
+    private(set) var userDefaultsManager: UserDefaultsManager
     
     var deviceToken: String? {
-        guard isUserDefaultsManagerAvailable() else { return nil }
-        let deviceToken = try? userDefaultsManager!.getObject(forKey: "deviceToken", objectType: String.self)
+        let deviceToken = try? userDefaultsManager.getObject(forKey: "deviceToken", objectType: String.self)
         return deviceToken
     }
     
     var isFirstLaunch: Bool {
-        guard isUserDefaultsManagerAvailable() else { return false }
         do {
-            let isFirstLaunch = try userDefaultsManager!.getObject(forKey: "isFirstLaunch", objectType: Bool.self) ?? true
+            let isFirstLaunch = try userDefaultsManager.getObject(forKey: "isFirstLaunch", objectType: Bool.self) ?? true
             if isFirstLaunch {
-                try userDefaultsManager!.setObject(false, forKey: "isFirstLaunch")
+                try userDefaultsManager.setObject(false, forKey: "isFirstLaunch")
             }
             return isFirstLaunch
         } catch {
@@ -37,16 +35,22 @@ class BaseViewModel: ObservableObject {
     }
     
     // MARK: - Initializers
-    init(swiftDataManager: SwiftDataManager? = nil, userDefaultsManager: UserDefaultsManager? = nil) {
-        self.swiftDataManager = swiftDataManager
+    init(userDefaultsManager: UserDefaultsManager = UserDefaultsManagerImpl(), swiftDataManager: SwiftDataManager? = nil) {
         self.userDefaultsManager = userDefaultsManager
+        
+        if let swiftDataManager {
+            self.swiftDataManager = swiftDataManager
+        } else {
+            let modelContainer = try! ModelContainer(for: CoinData.self)
+            let swiftDataManager = SwiftDataManagerImpl(modelContainer: modelContainer)
+            self.swiftDataManager = swiftDataManager
+        }
     }
     
     // MARK: - Methods
     func fetch<T: PersistentModel>(_ descriptor: FetchDescriptor<T>) -> [T] {
-        guard isSwiftDataManagerAvailable() else { return [] }
         do {
-            let models = try swiftDataManager!.fetch(descriptor)
+            let models = try swiftDataManager.fetch(descriptor)
             return models
         } catch {
             setErrorMessage(error)
@@ -55,27 +59,24 @@ class BaseViewModel: ObservableObject {
     }
     
     func insert<T: PersistentModel>(_ model: T) {
-        guard isSwiftDataManagerAvailable() else { return }
         do {
-            try swiftDataManager!.insert(model)
+            try swiftDataManager.insert(model)
         } catch {
             setErrorMessage(error)
         }
     }
     
     func delete<T: PersistentModel>(_ model: T) {
-        guard isSwiftDataManagerAvailable() else { return }
         do {
-            try swiftDataManager!.delete(model)
+            try swiftDataManager.delete(model)
         } catch {
             setErrorMessage(error)
         }
     }
     
     func save() {
-        guard isSwiftDataManagerAvailable() else { return }
         do {
-            try swiftDataManager!.save()
+            try swiftDataManager.save()
         } catch {
             setErrorMessage(error)
         }
@@ -98,22 +99,5 @@ class BaseViewModel: ObservableObject {
         } else {
             errorMessage = "An unknown error occurred: \(error.localizedDescription)"
         }
-    }
-    
-    // MARK: - Private
-    private func isUserDefaultsManagerAvailable() -> Bool {
-        guard userDefaultsManager != nil else {
-            print("UserDefaultsManager is not initialized")
-            return false
-        }
-        return true
-    }
-    
-    private func isSwiftDataManagerAvailable() -> Bool {
-        guard swiftDataManager != nil else {
-            print("SwiftDataManager is not initialized")
-            return false
-        }
-        return true
     }
 }

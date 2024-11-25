@@ -14,17 +14,35 @@ final class CoinDetailsViewModel: BaseViewModel {
     
     var chartDataCache: [String: [ChartData]] = [:]
     
-    private let service: CoinScannerService
+    private let coinScannerService: CoinScannerService
+    private let priceAlertService: PriceAlertService
     
     // MARK: - Initializers
-    init(coin: CoinData, chartData: [String: [ChartData]], service: CoinScannerService = CoinScannerServiceImpl()) {
+    convenience init(coin: CoinData, chartData: [String: [ChartData]]) {
+        self.init(
+            coin: coin,
+            chartData: chartData,
+            coinScannerService: CoinScannerServiceImpl(),
+            priceAlertService: PriceAlertServiceImpl()
+        )
+    }
+    
+    init(
+        coin: CoinData,
+        chartData: [String: [ChartData]],
+        coinScannerService: CoinScannerService,
+        priceAlertService: PriceAlertService
+    ) {
         self.coin = coin
-        self.service = service
+        self.coinScannerService = coinScannerService
+        self.priceAlertService = priceAlertService
         
         if !chartData.isEmpty {
             self.chartDataCache = chartData
             self.chartData = chartData[Timeframe.oneHour.rawValue] ?? []
         }
+        
+        super.init()
     }
     
     // MARK: - Internal Methods
@@ -39,13 +57,55 @@ final class CoinDetailsViewModel: BaseViewModel {
         }
         
         do {
-            let fetchedData = try await service.getChartData(for: coin.symbol, currency: .usd)
+            let fetchedData = try await coinScannerService.getChartData(for: coin.symbol, currency: .usd)
             for timeframe in Timeframe.allCases {
                 if let data = fetchedData[timeframe.rawValue] {
                     chartDataCache[timeframe.rawValue] = data
                 }
             }
             chartData = chartDataCache[timeframe.rawValue] ?? []
+        } catch {
+            setErrorMessage(error)
+        }
+    }
+    
+    func setPriceAlert(for coin: CoinData, targetPrice: Double?) async {
+        if let targetPrice {
+            await setPriceAlert(targetPrice, for: coin)
+        } else {
+            await deletePriceAlert(for: coin)
+        }
+        save()
+    }
+    
+    // MARK: - Private Methods
+    @MainActor
+    private func setPriceAlert(_ targetPrice: Double, for coin: CoinData) async {
+        guard let deviceToken else {
+            print("Device token is nil")
+            return
+        }
+        do {
+            let _ = try await priceAlertService.setPriceAlert(targetPrice, for: coin, deviceToken: deviceToken)
+            coin.targetPrice = targetPrice
+            coin.isActive = true
+        } catch {
+            coin.targetPrice = nil
+            coin.isActive = false
+            setErrorMessage(error)
+        }
+    }
+    
+    @MainActor
+    private func deletePriceAlert(for coin: CoinData) async {
+        guard let deviceToken else {
+            print("Device token is nil")
+            return
+        }
+        do {
+            let _ = try await priceAlertService.deletePriceAlert(for: coin.id, deviceToken: deviceToken)
+            coin.targetPrice = nil
+            coin.isActive = false
         } catch {
             setErrorMessage(error)
         }

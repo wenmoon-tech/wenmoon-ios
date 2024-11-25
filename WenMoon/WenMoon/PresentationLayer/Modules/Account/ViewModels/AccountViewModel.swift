@@ -23,7 +23,6 @@ final class AccountViewModel: BaseViewModel {
     // MARK: - Initializers
     convenience init() {
         self.init(
-            userDefaultsManager: UserDefaultsManagerImpl(),
             firebaseAuthService: FirebaseAuthServiceImpl(),
             googleSignInService: GoogleSignInServiceImpl(),
             twitterSignInService: TwitterSignInServiceImpl()
@@ -31,7 +30,6 @@ final class AccountViewModel: BaseViewModel {
     }
     
     init(
-        userDefaultsManager: UserDefaultsManager,
         firebaseAuthService: FirebaseAuthService,
         googleSignInService: GoogleSignInService,
         twitterSignInService: TwitterSignInService
@@ -39,7 +37,7 @@ final class AccountViewModel: BaseViewModel {
         self.firebaseAuthService = firebaseAuthService
         self.googleSignInService = googleSignInService
         self.twitterSignInService = twitterSignInService
-        super.init(userDefaultsManager: userDefaultsManager)
+        super.init()
     }
     
     // MARK: - Authentication
@@ -151,7 +149,7 @@ final class AccountViewModel: BaseViewModel {
     // MARK: - Private Methods
     private func getSavedSetting(of type: Setting.SettingType) -> String? {
         do {
-            return try userDefaultsManager?.getObject(forKey: type.rawValue, objectType: String.self)
+            return try userDefaultsManager.getObject(forKey: type.rawValue, objectType: String.self)
         } catch {
             setErrorMessage(error)
             return nil
@@ -160,7 +158,7 @@ final class AccountViewModel: BaseViewModel {
     
     private func setSetting(_ setting: String, of type: Setting.SettingType) {
         do {
-            try userDefaultsManager?.setObject(setting, forKey: type.rawValue)
+            try userDefaultsManager.setObject(setting, forKey: type.rawValue)
         } catch {
             setErrorMessage(error)
         }
