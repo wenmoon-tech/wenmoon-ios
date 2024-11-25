@@ -11,16 +11,10 @@ struct CoinListView: View {
     // MARK: - Properties
     @StateObject private var viewModel = CoinListViewModel()
     
+    @State private var selectedCoin: CoinData!
+    @State private var shouldShowAddCoinView = false
     @State private var isEditMode: EditMode = .inactive
     @State private var chartDrawProgress: CGFloat = .zero
-    @State private var shouldShowAddCoinView = false
-    @State private var showSetPriceAlertConfirmation = false
-    @State private var capturedCoin: CoinData?
-    @State private var targetPrice: Double?
-    @State private var toggleOffCoinID: String?
-    
-    @State private var selectedCoin: CoinData!
-    @State private var shouldShowCoinDetailsView = false
     
     // MARK: - Body
     var body: some View {
@@ -64,27 +58,6 @@ struct CoinListView: View {
             CoinDetailsView(coin: coin, chartData: viewModel.chartData[coin.symbol] ?? [:])
                 .presentationDetents([.medium])
                 .presentationCornerRadius(36)
-        }
-        .alert("Set Price Alert", isPresented: $showSetPriceAlertConfirmation, actions: {
-            TextField("Target Price", value: $targetPrice, format: .number)
-                .keyboardType(.decimalPad)
-            
-            Button("Confirm") {
-                if let coin = capturedCoin {
-                    Task {
-                        await viewModel.setPriceAlert(for: coin, targetPrice: targetPrice)
-                        capturedCoin = nil
-                        targetPrice = nil
-                    }
-                }
-            }
-            
-            Button("Cancel", role: .cancel) {
-                capturedCoin = nil
-                targetPrice = nil
-            }
-        }) {
-            Text("Please enter your target price in USD, and our system will notify you when it is reached")
         }
         .onReceive(NotificationCenter.default.publisher(for: .targetPriceReached)) { notification in
             if let coinID = notification.userInfo?["coinID"] as? String {

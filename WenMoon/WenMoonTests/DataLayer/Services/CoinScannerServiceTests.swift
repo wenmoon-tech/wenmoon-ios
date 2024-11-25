@@ -17,7 +17,7 @@ class CoinScannerServiceTests: XCTestCase {
     override func setUp() {
         super.setUp()
         httpClient = HTTPClientMock()
-        service = CoinScannerServiceImpl(httpClient: httpClient, baseURL: URL(string: "https://example.com/")!)
+        service = CoinScannerServiceImpl(httpClient: httpClient)
     }
     
     override func tearDown() {

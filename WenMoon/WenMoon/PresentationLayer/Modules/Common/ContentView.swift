@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    
     // MARK: - Body
     var body: some View {
         TabView {

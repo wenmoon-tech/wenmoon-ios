@@ -27,22 +27,13 @@ final class AddCoinViewModel: BaseViewModel {
     
     // MARK: - Initializers
     convenience init() {
-        if let modelContainer = try? ModelContainer(for: CoinData.self) {
-            let swiftDataManager = SwiftDataManagerImpl(modelContainer: modelContainer)
-            self.init(
-                coinScannerService: CoinScannerServiceImpl(),
-                swiftDataManager: swiftDataManager
-            )
-        } else {
-            self.init(
-                coinScannerService: CoinScannerServiceImpl()
-            )
-        }
+        self.init(coinScannerService: CoinScannerServiceImpl())
     }
     
     init(coinScannerService: CoinScannerService, swiftDataManager: SwiftDataManager? = nil) {
         self.coinScannerService = coinScannerService
         super.init(swiftDataManager: swiftDataManager)
+        
         searchQuerySubject
             .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
             .sink { [weak self] query in

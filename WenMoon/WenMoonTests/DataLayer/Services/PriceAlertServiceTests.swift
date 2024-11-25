@@ -18,7 +18,7 @@ class PriceAlertServiceTests: XCTestCase {
     override func setUp() {
         super.setUp()
         httpClient = HTTPClientMock()
-        service = PriceAlertServiceImpl(httpClient: httpClient, baseURL: URL(string: "https://example.com/")!)
+        service = PriceAlertServiceImpl(httpClient: httpClient)
         deviceToken = "someDeviceToken"
     }
     

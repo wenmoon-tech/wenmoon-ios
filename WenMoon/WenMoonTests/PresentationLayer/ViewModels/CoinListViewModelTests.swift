@@ -332,48 +332,6 @@ class CoinListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.errorMessage, error.errorDescription)
     }
     
-    func testSetPriceAlert_success() async throws {
-        // Setup
-        userDefaultsManager.getObjectReturnValue = ["deviceToken": deviceToken!]
-        let coin = CoinFactoryMock.makeCoinData()
-        let targetPrice: Double = 70000
-        viewModel.coins.append(coin)
-        let priceAlert = PriceAlertFactoryMock.makePriceAlert()
-        priceAlertService.setPriceAlertResult = .success(priceAlert)
-        
-        // Action - Set the price alert
-        await viewModel.setPriceAlert(for: coin, targetPrice: targetPrice)
-        
-        // Assertions after setting the price alert
-        assertCoinHasAlert(viewModel.coins.first!, targetPrice)
-        XCTAssertNil(viewModel.errorMessage)
-        
-        // Action - Delete Price Alert
-        priceAlertService.deletePriceAlertResult = .success(priceAlert)
-        await viewModel.setPriceAlert(for: coin, targetPrice: nil)
-        
-        // Assertions after deleting the price alert
-        assertCoinHasNoAlert(viewModel.coins.first!)
-        XCTAssertNil(viewModel.errorMessage)
-    }
-    
-    func testSetPriceAlert_encodingError() async throws {
-        // Setup
-        userDefaultsManager.getObjectReturnValue = ["deviceToken": deviceToken!]
-        let coin = CoinFactoryMock.makeCoinData()
-        viewModel.coins.append(coin)
-        let error = ErrorFactoryMock.makeFailedToEncodeBodyError()
-        priceAlertService.setPriceAlertResult = .failure(error)
-        
-        // Action
-        await viewModel.setPriceAlert(for: coin, targetPrice: 70000)
-        
-        // Assertions
-        assertCoinHasNoAlert(coin)
-        XCTAssertNotNil(viewModel.errorMessage)
-        XCTAssertEqual(viewModel.errorMessage, error.errorDescription)
-    }
-    
     func testToggleOffPriceAlert() async throws {
         // Setup
         let coin = CoinFactoryMock.makeCoinData()
