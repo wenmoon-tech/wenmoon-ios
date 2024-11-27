@@ -17,9 +17,10 @@ struct CoinDetailsView: View {
     @State private var selectedDate = ""
     @State private var selectedXPosition: CGFloat?
     @State private var selectedTimeframe: Timeframe = .oneHour
-    @State private var showSetPriceAlertConfirmation = false
-    @State private var capturedCoin: CoinData?
     @State private var targetPrice: Double?
+    
+    @State private var showSetPriceAlertConfirmation = false
+    @State private var showPriceAlerts = false
     
     // MARK: - Initializers
     init(coin: CoinData, chartData: [String: [ChartData]]) {
@@ -31,27 +32,27 @@ struct CoinDetailsView: View {
     var body: some View {
         let coin = viewModel.coin
         BaseView(errorMessage: $viewModel.errorMessage) {
-            VStack {
+            VStack(spacing: 16) {
                 HStack(spacing: 12) {
-                    if let imageData = coin.imageData,
-                       let uiImage = UIImage(data: imageData) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFill()
+                    ZStack {
+                        Circle()
+                            .fill(Color.white)
                             .frame(width: 36, height: 36)
-                            .cornerRadius(8)
-                    } else {
-                        ZStack {
-                            Circle()
-                                .fill(Color.gray)
-                                .frame(width: 36, height: 36)
-                            
+                        
+                        if let data = coin.imageData,
+                           let uiImage = UIImage(data: data) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 18, height: 18)
+                                .clipShape(.circle)
+                        } else {
                             Text(coin.name.prefix(1))
-                                .font(.title2)
-                                .foregroundColor(.white)
+                                .font(.callout)
+                                .foregroundColor(.wmBlack)
                         }
-                        .brightness(-0.1)
                     }
+                    .brightness(-0.1)
                     
                     VStack(alignment: .leading) {
                         HStack {
@@ -79,7 +80,8 @@ struct CoinDetailsView: View {
                     
                     HStack(spacing: 24) {
                         Button(action: {
-                            showSetPriceAlertConfirmation.toggle()
+                            //showSetPriceAlertConfirmation.toggle()
+                            showPriceAlerts.toggle()
                         }) {
                             Image(systemName: "bell.fill")
                                 .resizable()
@@ -99,8 +101,6 @@ struct CoinDetailsView: View {
                     }
                 }
                 
-                Spacer()
-                
                 ZStack {
                     if !viewModel.chartData.isEmpty {
                         makeChartView(viewModel.chartData)
@@ -111,7 +111,8 @@ struct CoinDetailsView: View {
                         ProgressView()
                     }
                 }
-                .frame(height: 100)
+                .frame(height: 200)
+                //.padding(.vertical, 16)
                 
                 Picker("Select Timeframe", selection: $selectedTimeframe) {
                     ForEach(Timeframe.allCases, id: \.self) { timeframe in
@@ -120,7 +121,6 @@ struct CoinDetailsView: View {
                 }
                 .pickerStyle(.segmented)
                 .scaleEffect(0.85)
-                .padding(.vertical, 8)
                 
                 HStack {
                     VStack(alignment: .leading, spacing: 8) {
@@ -142,8 +142,10 @@ struct CoinDetailsView: View {
                 .padding()
                 .background(Color(.secondarySystemBackground))
                 .cornerRadius(12)
+                
+                Spacer()
             }
-            .padding(.top, 12)
+            .padding(.top, 16)
             .padding(.horizontal, 24)
         }
         .onChange(of: selectedTimeframe) { _, timeframe in
@@ -167,6 +169,11 @@ struct CoinDetailsView: View {
             }
         }) {
             Text("Please enter your target price in USD, and our system will notify you when it is reached")
+        }
+        .sheet(isPresented: $showPriceAlerts) {
+            PriceAlertView(alerts: coin.priceAlerts)
+                .presentationDetents([.medium, .large])
+                .presentationCornerRadius(36)
         }
         .task {
             await viewModel.fetchChartData(on: selectedTimeframe)
@@ -295,4 +302,44 @@ struct CoinDetailsView: View {
 // MARK: - Preview
 #Preview {
     CoinDetailsView(coin: CoinData(), chartData: [:])
+}
+
+struct PriceAlertView: View {
+    var priceAlerts: [PriceAlert]
+    
+    var body: some View {
+        NavigationView {
+            VStack {
+                List {
+                    ForEach(priceAlerts.enumerated(), id: \.self) { priceAlert, index in
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(priceAlert.name)
+                                Text("TargetPrice: $\(priceAlert.targetPrice)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                            }
+                            Spacer()
+                            Button(action: {
+                                priceAlerts.remove(at: index)
+                            }) {
+                                Image(systemName: "xmark")
+                            }
+                        }
+                    }
+                    .onDelete(perform: deleteItems)
+                }
+                .navigationBarTitle("Price Alerts")
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        EditButton()
+                    }
+                }
+            }
+        }
+    }
+    
+    private func deleteItems(at offsets: IndexSet) {
+        alerts.remove(atOffsets: offsets)
+    }
 }

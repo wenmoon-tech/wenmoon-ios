@@ -7,14 +7,14 @@
 
 import Foundation
 
-struct PriceAlert: Codable {
+struct PriceAlert: Codable, Hashable {
     enum TargetDirection: String, Codable {
         case above = "ABOVE"
         case below = "BELOW"
     }
     
-    let coinId: String
-    let coinName: String
+    let id: String
+    let name: String
     let targetPrice: Double
     let targetDirection: TargetDirection
 }

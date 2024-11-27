@@ -36,10 +36,9 @@ final class CoinData {
     var atlChangePercentage: Double?
     var atlDate: String?
     var imageData: Data?
-    var targetPrice: Double?
-    var isActive: Bool
+    var priceAlerts: [PriceAlert]
     
-    convenience init(from coin: Coin, imageData: Data? = nil, targetPrice: Double? = nil, isActive: Bool = false) {
+    convenience init(from coin: Coin, imageData: Data? = nil, priceAlerts: [PriceAlert] = []) {
         self.init(
             id: coin.id,
             symbol: coin.symbol,
@@ -66,8 +65,7 @@ final class CoinData {
             atlChangePercentage: coin.atlChangePercentage,
             atlDate: coin.atlDate,
             imageData: imageData,
-            targetPrice: targetPrice,
-            isActive: isActive
+            priceAlerts: priceAlerts
         )
     }
     
@@ -97,8 +95,7 @@ final class CoinData {
         atlChangePercentage: Double? = nil,
         atlDate: String? = nil,
         imageData: Data? = nil,
-        targetPrice: Double? = nil,
-        isActive: Bool = false
+        priceAlerts: [PriceAlert] = []
     ) {
         self.id = id
         self.symbol = symbol
@@ -125,8 +122,7 @@ final class CoinData {
         self.atlChangePercentage = atlChangePercentage
         self.atlDate = atlDate
         self.imageData = imageData
-        self.targetPrice = targetPrice
-        self.isActive = isActive
+        self.priceAlerts = priceAlerts
     }
 }
 

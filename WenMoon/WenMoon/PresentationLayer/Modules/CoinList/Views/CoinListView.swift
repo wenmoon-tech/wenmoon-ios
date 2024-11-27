@@ -56,7 +56,6 @@ struct CoinListView: View {
             selectedCoin = nil
         }) { coin in
             CoinDetailsView(coin: coin, chartData: viewModel.chartData[coin.symbol] ?? [:])
-                .presentationDetents([.medium])
                 .presentationCornerRadius(36)
         }
         .onReceive(NotificationCenter.default.publisher(for: .targetPriceReached)) { notification in
@@ -75,25 +74,39 @@ struct CoinListView: View {
     @ViewBuilder
     private func makeCoinView(_ coin: CoinData) -> some View {
         HStack(spacing: .zero) {
-            if let data = coin.imageData,
-               let uiImage = UIImage(data: data) {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 48, height: 48)
-                    .cornerRadius(8)
-                    .grayscale(0.4)
-            } else {
+            ZStack(alignment: .topTrailing) {
                 ZStack {
                     Circle()
-                        .fill(Color.gray)
+                        .fill(Color.white)
                         .frame(width: 48, height: 48)
                     
-                    Text(coin.name.prefix(1))
-                        .font(.title2)
-                        .foregroundColor(.white)
+                    if let data = coin.imageData,
+                       let uiImage = UIImage(data: data) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                            .clipShape(.circle)
+                    } else {
+                        Text(coin.name.prefix(1))
+                            .font(.body)
+                            .foregroundColor(.wmBlack)
+                    }
                 }
                 .brightness(-0.1)
+                
+                if coin.isActive {
+                    Image(systemName: "bell.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 16, height: 16)
+                        .foregroundColor(.lightGray)
+                        .padding(4)
+                        .background(Color(.systemBackground))
+                        .clipShape(.circle)
+                        .padding(.trailing, -8)
+                        .padding(.top, -8)
+                }
             }
             
             VStack(alignment: .leading, spacing: 4) {

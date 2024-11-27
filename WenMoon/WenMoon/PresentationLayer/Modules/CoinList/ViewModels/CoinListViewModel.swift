@@ -114,14 +114,14 @@ final class CoinListViewModel: BaseViewModel {
     
     @MainActor
     func fetchPriceAlerts() async {
-        guard let deviceToken, !coins.isEmpty else {
-            print("Device token is nil or coins are empty")
-            return
-        }
+//        guard let deviceToken, !coins.isEmpty else {
+//            print("Device token is nil or coins are empty")
+//            return
+//        }
         do {
-            let priceAlerts = try await priceAlertService.getPriceAlerts(deviceToken: deviceToken)
+            let priceAlerts = try await priceAlertService.getPriceAlerts(deviceToken: "740f4707bebcf74f9b7c25d48e3358945f6aa01da5ddb387462c7eaf61bb78ad")
             for (index, coin) in coins.enumerated() {
-                if let matchingPriceAlert = priceAlerts.first(where: { $0.coinId == coin.id }) {
+                if let matchingPriceAlert = priceAlerts.first(where: { $0.id == coin.id }) {
                     coins[index].targetPrice = matchingPriceAlert.targetPrice
                     coins[index].isActive = true
                 } else {

@@ -8,6 +8,7 @@
 import SwiftUI
 
 extension Color {
+    static let lightGray = Color("lightGray")
     static let wmBlack = Color("wmBlack")
     static let wmPink = Color("wmPink")
 }

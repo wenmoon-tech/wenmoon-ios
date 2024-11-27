@@ -82,12 +82,12 @@ final class CoinDetailsViewModel: BaseViewModel {
     // MARK: - Private Methods
     @MainActor
     private func setPriceAlert(_ targetPrice: Double, for coin: CoinData) async {
-        guard let deviceToken else {
-            print("Device token is nil")
-            return
-        }
+//        guard let deviceToken else {
+//            print("Device token is nil")
+//            return
+//        }
         do {
-            let _ = try await priceAlertService.setPriceAlert(targetPrice, for: coin, deviceToken: deviceToken)
+            let _ = try await priceAlertService.setPriceAlert(targetPrice, for: coin, deviceToken: "740f4707bebcf74f9b7c25d48e3358945f6aa01da5ddb387462c7eaf61bb78ad")
             coin.targetPrice = targetPrice
             coin.isActive = true
         } catch {
@@ -99,12 +99,12 @@ final class CoinDetailsViewModel: BaseViewModel {
     
     @MainActor
     private func deletePriceAlert(for coin: CoinData) async {
-        guard let deviceToken else {
-            print("Device token is nil")
-            return
-        }
+//        guard let deviceToken else {
+//            print("Device token is nil")
+//            return
+//        }
         do {
-            let _ = try await priceAlertService.deletePriceAlert(for: coin.id, deviceToken: deviceToken)
+            let _ = try await priceAlertService.deletePriceAlert(for: coin.id, deviceToken: "740f4707bebcf74f9b7c25d48e3358945f6aa01da5ddb387462c7eaf61bb78ad")
             coin.targetPrice = nil
             coin.isActive = false
         } catch {

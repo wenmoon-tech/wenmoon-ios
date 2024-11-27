@@ -28,8 +28,8 @@ final class PriceAlertServiceImpl: BaseBackendService, PriceAlertService {
     
     func setPriceAlert(_ targetPrice: Double, for coin: CoinData, deviceToken: String) async throws -> PriceAlert {
         let request = PriceAlert(
-            coinId: coin.id,
-            coinName: coin.name,
+            id: coin.id,
+            name: coin.name,
             targetPrice: targetPrice,
             targetDirection: (coin.currentPrice ?? .zero) < targetPrice ? .above : .below
         )
@@ -37,7 +37,7 @@ final class PriceAlertServiceImpl: BaseBackendService, PriceAlertService {
             let body = try encoder.encode(request)
             let data = try await httpClient.post(path: "price-alert", headers: ["X-Device-ID": deviceToken], body: body)
             let priceAlert = try decoder.decode(PriceAlert.self, from: data)
-            print("Successfully set price alert for \(priceAlert.coinName) with target price \(priceAlert.targetPrice)")
+            print("Successfully set price alert for \(priceAlert.name) with target price \(priceAlert.targetPrice)")
             return priceAlert
         } catch {
             throw mapToAPIError(error)
@@ -48,7 +48,7 @@ final class PriceAlertServiceImpl: BaseBackendService, PriceAlertService {
         do {
             let data = try await httpClient.delete(path: "price-alert/\(id)", headers: ["X-Device-ID": deviceToken])
             let priceAlert = try decoder.decode(PriceAlert.self, from: data)
-            print("Successfully deleted price alert for \(priceAlert.coinName)")
+            print("Successfully deleted price alert for \(priceAlert.name)")
             return priceAlert
         } catch {
             throw mapToAPIError(error)
