@@ -19,10 +19,10 @@ final class AccountViewModel: BaseViewModel {
     // MARK: - Properties
     private let googleSignInService: GoogleSignInService
     private let twitterSignInService: TwitterSignInService
-
+    
     @Published var settings: [Setting] = []
     @Published var loginState: LoginState = .signedOut
-
+    
     @Published private(set) var isGoogleAuthInProgress = false
     @Published private(set) var isTwitterAuthInProgress = false
     
@@ -114,6 +114,7 @@ final class AccountViewModel: BaseViewModel {
     // MARK: - Settings
     func fetchSettings() {
         settings = [
+            Setting(type: .startScreen, selectedOption: getSavedSetting(of: .startScreen)),
             Setting(type: .language, selectedOption: getSavedSetting(of: .language)),
             Setting(type: .currency, selectedOption: getSavedSetting(of: .currency)),
             Setting(type: .privacyPolicy)
@@ -124,7 +125,7 @@ final class AccountViewModel: BaseViewModel {
         }
     }
     
-    func updateSetting(of type: Setting.SettingType, with value: String) {
+    func updateSetting(of type: Setting.SettingType, with value: Int) {
         if let index = settings.firstIndex(where: { $0.type == type }) {
             settings[index].selectedOption = value
             setSetting(value, of: settings[index].type)
@@ -133,6 +134,10 @@ final class AccountViewModel: BaseViewModel {
     
     func getSetting(of type: Setting.SettingType) -> Setting? {
         settings.first(where: { $0.type == type })
+    }
+    
+    func getSettingOptionTitle(for settingType: Setting.SettingType, with selectedOption: Int) -> String {
+        settingType.options[selectedOption].title
     }
     
     // MARK: - Private Methods
@@ -147,36 +152,24 @@ final class AccountViewModel: BaseViewModel {
         }
     }
     
-    private func getSavedSetting(of type: Setting.SettingType) -> String? {
-        try? userDefaultsManager.getObject(forKey: .setting(ofType: type), objectType: String.self) ?? type.defaultOption?.name
+    private func getSavedSetting(of type: Setting.SettingType) -> Int {
+        (try? userDefaultsManager.getObject(forKey: .setting(ofType: type), objectType: Int.self)) ?? .zero
     }
     
-    private func setSetting(_ setting: String, of type: Setting.SettingType) {
+    private func setSetting(_ setting: Int, of type: Setting.SettingType) {
         try? userDefaultsManager.setObject(setting, forKey: .setting(ofType: type))
     }
 }
 
 struct Setting: Identifiable, Hashable {
-    enum SettingType: String, CaseIterable {
-        struct Option {
-            let name: String
-            let isEnabled: Bool
-        }
-        
-        enum Language: String, CaseIterable {
-            case english = "English"
-            case spanish = "Spanish"
-            case german = "German"
-            case french = "French"
-        }
+    var id = UUID().uuidString
+    let type: SettingType
+    var selectedOption: Int? = nil
+}
 
-        enum Currency: String, CaseIterable {
-            case usd = "USD"
-            case eur = "EUR"
-            case gbp = "GBP"
-            case jpy = "JPY"
-        }
-        
+extension Setting {
+    enum SettingType: Int, CaseIterable {
+        case startScreen
         case language
         case currency
         case privacyPolicy
@@ -184,6 +177,8 @@ struct Setting: Identifiable, Hashable {
         
         var title: String {
             switch self {
+            case .startScreen:
+                return "Start Screen"
             case .language:
                 return "Language"
             case .currency:
@@ -197,6 +192,8 @@ struct Setting: Identifiable, Hashable {
         
         var icon: String {
             switch self {
+            case .startScreen:
+                return "house"
             case .language:
                 return "globe"
             case .currency:
@@ -208,30 +205,87 @@ struct Setting: Identifiable, Hashable {
             }
         }
         
-        var options: [Option] {
+        var options: [SettingOption] {
             switch self {
+            case .startScreen:
+                return StartScreen.allCases.map { SettingOption(title: $0.title, value: $0.rawValue, isEnabled: true) }
             case .language:
-                return Language.allCases.map { Option(name: $0.rawValue, isEnabled: $0 == .english) }
+                return Language.allCases.map { SettingOption(title: $0.title, value: $0.rawValue, isEnabled: $0 == .english) }
             case .currency:
-                return Currency.allCases.map { Option(name: $0.rawValue, isEnabled: $0 == .usd) }
+                return Currency.allCases.map { SettingOption(title: $0.title, value: $0.rawValue, isEnabled: $0 == .usd) }
             default:
                 return []
             }
         }
         
-        var defaultOption: Option? {
+        var defaultOption: SettingOption? {
             switch self {
+            case .startScreen:
+                let startScreen = StartScreen.watchlist
+                return SettingOption(title: startScreen.title, value: startScreen.rawValue, isEnabled: true)
             case .language:
-                return Option(name: Language.english.rawValue, isEnabled: true)
+                let language = Language.english
+                return SettingOption(title: language.title, value: language.rawValue, isEnabled: true)
             case .currency:
-                return Option(name: Currency.usd.rawValue, isEnabled: true)
+                let currency = Currency.usd
+                return SettingOption(title: currency.title, value: currency.rawValue, isEnabled: true)
             default:
                 return nil
             }
         }
     }
+}
+
+extension Setting.SettingType {
+    enum StartScreen: Int, CaseIterable {
+        case watchlist
+        case portfolio
+        case compare
+        
+        var title: String {
+            switch self {
+            case .watchlist: return "Watchlist"
+            case .portfolio: return "Portfolio"
+            case .compare: return "Compare"
+            }
+        }
+    }
     
-    var id = UUID().uuidString
-    let type: SettingType
-    var selectedOption: String? = nil
+    enum Language: Int, CaseIterable {
+        case english
+        case spanish
+        case german
+        case french
+        
+        var title: String {
+            switch self {
+            case .english: return "English"
+            case .spanish: return "Spanish"
+            case .german: return "German"
+            case .french: return "French"
+            }
+        }
+    }
+    
+    enum Currency: Int, CaseIterable {
+        case usd
+        case eur
+        case gbp
+        case jpy
+        
+        var title: String {
+            switch self {
+            case .usd: return "USD"
+            case .eur: return "EUR"
+            case .gbp: return "GBP"
+            case .jpy: return "JPY"
+            }
+        }
+    }
+}
+
+struct SettingOption: Hashable {
+    let title: String
+    let value: Int
+    let isEnabled: Bool
 }

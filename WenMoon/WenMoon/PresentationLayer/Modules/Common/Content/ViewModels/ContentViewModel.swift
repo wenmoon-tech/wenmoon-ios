@@ -11,6 +11,7 @@ final class ContentViewModel: BaseViewModel {
     // MARK: - Properties
     private let coinScannerService: CoinScannerService
     
+    @Published var startScreenIndex: Int = .zero
     @Published private(set) var globalMarketItems: [GlobalMarketItem] = []
     
     // MARK: - Initializers
@@ -24,6 +25,10 @@ final class ContentViewModel: BaseViewModel {
     }
     
     // MARK: - Internal Methods
+    func fetchStartScreen() {
+        startScreenIndex = (try? userDefaultsManager.getObject(forKey: .setting(ofType: .startScreen), objectType: Int.self)) ?? .zero
+    }
+    
     @MainActor
     func fetchGlobalCryptoMarketData() async {
         do {

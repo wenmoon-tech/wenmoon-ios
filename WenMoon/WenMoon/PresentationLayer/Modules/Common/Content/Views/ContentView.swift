@@ -25,31 +25,36 @@ struct ContentView: View {
             .offset(x: scrollText ? -680 : 680)
             .animation(.linear(duration: 20).repeatForever(autoreverses: false), value: scrollText)
             
-            TabView {
+            TabView(selection: $viewModel.startScreenIndex) {
                 CoinListView()
                     .tabItem {
                         Image("coins")
                     }
+                    .tag(0)
                 
                 PortfolioView()
                     .tabItem {
                         Image("bag")
                     }
+                    .tag(1)
                 
                 CryptoCompareView()
                     .tabItem {
                         Image("arrows.swap")
                     }
+                    .tag(2)
                 
                 EducationView()
                     .tabItem {
                         Image("books")
                     }
+                    .tag(3)
                 
                 AccountView()
                     .tabItem {
                         Image("person")
                     }
+                    .tag(4)
             }
         }
         .task {
@@ -61,6 +66,7 @@ struct ContentView: View {
                 try await Task.sleep(for: .seconds(1))
                 scrollText = true
             }
+            viewModel.fetchStartScreen()
         }
     }
     

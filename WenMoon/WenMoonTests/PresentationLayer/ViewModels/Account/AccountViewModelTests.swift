@@ -94,13 +94,16 @@ class AccountViewModelTests: XCTestCase {
     
     func testFetchSettings() {
         // Setup
-        let selectedLanguageOption = "English"
-        let selectedCurrencyOption = "USD"
+        let selectedStartScreenOption = 0
+        let selectedLanguageOption = 1
+        let selectedCurrencyOption = 2
         userDefaultsManager.getObjectReturnValue = [
+            .setting(ofType: .startScreen): selectedStartScreenOption,
             .setting(ofType: .language): selectedLanguageOption,
             .setting(ofType: .currency): selectedCurrencyOption
         ]
         let expectedSettings: [Setting] = [
+            Setting(type: .startScreen, selectedOption: selectedStartScreenOption),
             Setting(type: .language, selectedOption: selectedLanguageOption),
             Setting(type: .currency, selectedOption: selectedCurrencyOption),
             Setting(type: .privacyPolicy)
@@ -119,27 +122,31 @@ class AccountViewModelTests: XCTestCase {
     
     func testUpdateSetting() {
         // Setup
-        let languageSetting = Setting(type: .language, selectedOption: "English")
+        let languageSetting = Setting(type: .language, selectedOption: 0)
         viewModel.settings = [languageSetting]
         
         // Action
-        let newLanguageSettingValue = "German"
+        let newLanguageSettingValue = 1
         viewModel.updateSetting(of: .language, with: newLanguageSettingValue)
         
         // Assertions
         let updatedSetting = viewModel.getSetting(of: .language)!
         XCTAssertEqual(updatedSetting.selectedOption, newLanguageSettingValue)
         XCTAssertTrue(userDefaultsManager.setObjectCalled)
-        XCTAssertEqual(userDefaultsManager.setObjectValue[.setting(ofType: languageSetting.type)] as? String, newLanguageSettingValue)
+        XCTAssertEqual(userDefaultsManager.setObjectValue[.setting(ofType: languageSetting.type)] as! Int, newLanguageSettingValue)
     }
     
     func testGetSetting() {
         // Setup
-        let languageSetting = Setting(type: .language, selectedOption: "English")
-        let currencySetting = Setting(type: .currency, selectedOption: "USD")
-        viewModel.settings = [languageSetting, currencySetting]
+        let startScreenSetting = Setting(type: .startScreen, selectedOption: 0)
+        let languageSetting = Setting(type: .language, selectedOption: 1)
+        let currencySetting = Setting(type: .currency, selectedOption: 2)
+        viewModel.settings = [startScreenSetting, languageSetting, currencySetting]
         
         // Assertions
+        let fetchedStartScreenSetting = viewModel.getSetting(of: .startScreen)
+        XCTAssertEqual(fetchedStartScreenSetting, startScreenSetting)
+        
         let fetchedLanguageSetting = viewModel.getSetting(of: .language)
         XCTAssertEqual(fetchedLanguageSetting, languageSetting)
         

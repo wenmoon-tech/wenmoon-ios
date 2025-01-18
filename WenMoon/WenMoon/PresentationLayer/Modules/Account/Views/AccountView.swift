@@ -143,16 +143,18 @@ struct AccountView: View {
     
     @ViewBuilder
     private func makeSettingsRow(_ setting: Setting) -> some View {
+        let settingType = setting.type
         HStack(spacing: 12) {
-            Image(systemName: setting.type.icon)
+            Image(systemName: settingType.icon)
             
-            Text(setting.type.title)
+            Text(settingType.title)
                 .font(.body)
             
             Spacer()
             
             if let selectedOption = setting.selectedOption {
-                Text(selectedOption)
+                let selectedOptionTitle = viewModel.getSettingOptionTitle(for: settingType, with: selectedOption)
+                Text(selectedOptionTitle)
                     .font(.callout)
                     .foregroundColor(.gray)
             }
@@ -166,22 +168,22 @@ struct AccountView: View {
         .padding(.vertical, 8)
         .contentShape(Rectangle())
         .onTapGesture {
-            if setting.type == .signOut {
+            if settingType == .signOut {
                 showSignOutConfirmation = true
                 viewModel.triggerImpactFeedback()
             } else {
                 selectedSetting = setting
             }
         }
-        .disabled(setting.type == .privacyPolicy)
-        .foregroundColor(setting.type == .signOut ? .red : .primary)
+        .disabled(settingType == .privacyPolicy)
+        .foregroundColor(settingType == .signOut ? .red : .primary)
     }
     
     // MARK: - Helper Methods
-    private func setupSettingsBinding(_ setting: Setting) -> Binding<String> {
+    private func setupSettingsBinding(_ setting: Setting) -> Binding<Int> {
         Binding(
             get: {
-                viewModel.getSetting(of: setting.type)?.selectedOption ?? ""
+                viewModel.getSetting(of: setting.type)?.selectedOption ?? .zero
             },
             set: { newValue in
                 viewModel.updateSetting(of: setting.type, with: newValue)
