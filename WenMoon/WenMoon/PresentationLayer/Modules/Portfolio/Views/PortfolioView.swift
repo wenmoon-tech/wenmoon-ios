@@ -9,7 +9,7 @@ import SwiftUI
 
 struct PortfolioView: View {
     // MARK: - Properties
-    @StateObject private var viewModel = PortfolioViewModel()
+    @EnvironmentObject private var viewModel: PortfolioViewModel
     
     @State private var showAddTransactionView = false
     
@@ -53,9 +53,6 @@ struct PortfolioView: View {
                 .presentationCornerRadius(36)
             }
         }
-        .onAppear {
-            viewModel.fetchPortfolios()
-        }
     }
     
     // MARK: - Subviews
@@ -63,7 +60,7 @@ struct PortfolioView: View {
     private func makePortfolioHeaderView() -> some View {
         VStack(spacing: 8) {
             Text(viewModel.totalValue.formattedAsCurrency())
-                .font(.title).bold()
+                .font(.largeTitle).bold()
                 .foregroundColor(.wmPink)
             
             HStack {
@@ -101,11 +98,12 @@ struct PortfolioView: View {
                     ForEach(groupedTransactions, id: \.coin.id) { group in
                         makeTransactionsSummaryView(for: group, isExpanded: expandedRows.contains(group.coin.id))
                             .onTapGesture {
-                                withAnimation(.easeInOut) {
+                                withAnimation {
                                     toggleRowExpansion(for: group.coin.id)
                                 }
                                 viewModel.triggerImpactFeedback()
                             }
+                        
                         if expandedRows.contains(group.coin.id) {
                             makeExpandedTransactionsView(for: group)
                         }
@@ -147,18 +145,18 @@ struct PortfolioView: View {
             )
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(group.coin.symbol.uppercased())
-                    .font(.footnote).bold()
+                Text(group.coin.symbol)
+                    .font(.subheadline).bold()
                 
                 Text(group.totalQuantity.formattedAsQuantity())
-                    .font(.caption)
+                    .font(.caption).bold()
                     .foregroundColor(.gray)
             }
             
             Spacer()
             
             Text(group.totalValue.formattedAsCurrency())
-                .font(.caption).bold()
+                .font(.footnote).bold()
             
             Image(systemName: "chevron.up")
                 .resizable()
@@ -182,27 +180,29 @@ struct PortfolioView: View {
     
     @ViewBuilder
     private func makeExpandedTransactionsView(for group: CoinTransactions) -> some View {
-        ForEach(group.transactions.keys.sorted(by: { $0 > $1 }), id: \.self) { date in
-            Section(date.formatted(as: .dateOnly)) {
-                ForEach(group.transactions[date] ?? [], id: \.id) { transaction in
-                    makeTransactionView(group.coin, transaction)
-                        .swipeActions {
-                            Button(role: .destructive) {
-                                viewModel.deleteTransaction(transaction.id)
-                            } label: {
-                                Image("trash")
+        Group {
+            ForEach(group.transactions.keys.sorted(by: { $0 > $1 }), id: \.self) { date in
+                Section(date.formatted(as: .dateOnly)) {
+                    ForEach(group.transactions[date] ?? [], id: \.id) { transaction in
+                        makeTransactionView(group.coin, transaction)
+                            .swipeActions {
+                                Button(role: .destructive) {
+                                    viewModel.deleteTransaction(transaction.id)
+                                } label: {
+                                    Image("trash")
+                                }
+                                
+                                Button {
+                                    swipedTransaction = transaction.copy()
+                                } label: {
+                                    Image("pencil")
+                                }
+                                .tint(.blue)
                             }
-                            
-                            Button {
-                                swipedTransaction = transaction.copy()
-                            } label: {
-                                Image("pencil")
-                            }
-                            .tint(.blue)
-                        }
+                    }
                 }
+                .listRowSeparator(.hidden)
             }
-            .listRowSeparator(.hidden)
         }
     }
     
@@ -224,11 +224,9 @@ struct PortfolioView: View {
                 HStack(spacing: 4) {
                     let isDeductiveTransaction = viewModel.isDeductiveTransaction(transaction.type)
                     Text(transaction.quantity.formattedAsQuantity(includeMinusSign: isDeductiveTransaction))
-                        .font(.footnote).bold()
-                    
-                    Text(coin.symbol.uppercased())
-                        .font(.footnote).bold()
+                    Text(coin.symbol)
                 }
+                .font(.footnote).bold()
                 
                 Text(transaction.totalCost.formattedAsCurrency())
                     .font(.caption)

@@ -56,20 +56,29 @@ final class CoinListViewModel: BaseViewModel {
     /// Fetch coins from the persistent store, apply saved order, update market data and price alerts.
     @MainActor
     func fetchCoins() async {
-        let descriptor = FetchDescriptor<CoinData>(
-            predicate: #Predicate { !$0.isArchived },
-            sortBy: [SortDescriptor(\.marketCap)]
-        )
-        let fetchedCoins = fetch(descriptor)
-        
-        if let savedOrder = try? userDefaultsManager.getObject(forKey: .coinsOrder, objectType: [String].self) {
-            coins = fetchedCoins.sorted { coin1, coin2 in
-                let index1 = savedOrder.firstIndex(of: coin1.id) ?? .max
-                let index2 = savedOrder.firstIndex(of: coin2.id) ?? .max
-                return index1 < index2
+        if isFirstLaunch {
+            let predefinedCoins = CoinData.predefinedCoins
+            coins = predefinedCoins
+            for coin in predefinedCoins {
+                insert(coin)
+                saveCoinsOrder()
             }
         } else {
-            coins = fetchedCoins
+            let descriptor = FetchDescriptor<CoinData>(
+                predicate: #Predicate { !$0.isArchived },
+                sortBy: [SortDescriptor(\.marketCap)]
+            )
+            let fetchedCoins = fetch(descriptor)
+            
+            if let savedOrder = try? userDefaultsManager.getObject(forKey: .coinsOrder, objectType: [String].self) {
+                coins = fetchedCoins.sorted { coin1, coin2 in
+                    let index1 = savedOrder.firstIndex(of: coin1.id) ?? .max
+                    let index2 = savedOrder.firstIndex(of: coin2.id) ?? .max
+                    return index1 < index2
+                }
+            } else {
+                coins = fetchedCoins
+            }
         }
         
         await fetchMarketData()
@@ -234,8 +243,9 @@ final class CoinListViewModel: BaseViewModel {
     
     /// Archives a coin (marks as archived and removes it from the active list).
     private func archiveCoin(_ coin: CoinData) {
-        coin.isArchived = true
         withAnimation {
+            coin.isPinned = false
+            coin.isArchived = true
             if let index = coins.firstIndex(of: coin) {
                 coins.remove(at: index)
             }
@@ -263,11 +273,11 @@ final class CoinListViewModel: BaseViewModel {
     /// Sort coins so that pinned coins always appear at the top.
     private func sortCoins() {
         withAnimation {
-            coins.sort {
-                if $0.isPinned == $1.isPinned {
-                    return false
+            coins.sort { coin1, coin2 in
+                if coin1.isPinned != coin2.isPinned {
+                    return coin1.isPinned
                 }
-                return $0.isPinned && !$1.isPinned
+                return (coin1.marketCap ?? .zero) > (coin2.marketCap ?? .zero)
             }
         }
     }

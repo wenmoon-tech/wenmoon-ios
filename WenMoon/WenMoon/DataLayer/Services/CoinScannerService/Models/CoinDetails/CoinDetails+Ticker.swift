@@ -22,7 +22,7 @@ extension CoinDetails {
             var color: Color {
                 switch self {
                 case .green: return .wmGreen
-                case .yellow: return .yellow
+                case .yellow: return .wmYellow
                 case .red: return .wmRed
                 }
             }

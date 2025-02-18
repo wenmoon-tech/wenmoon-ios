@@ -12,8 +12,8 @@ struct CryptoCompareView: View {
     @StateObject private var viewModel = CryptoCompareViewModel()
 
     @State private var selectedPriceOption: PriceOption = .now
-    @State private var coinToBeCompared: Coin?
-    @State private var coinToCompareWith: Coin?
+    @State private var coinA: Coin?
+    @State private var coinB: Coin?
 
     @State private var cachedImage1: Image?
     @State private var cachedImage2: Image?
@@ -26,14 +26,14 @@ struct CryptoCompareView: View {
         NavigationView {
             VStack(spacing: 16) {
                 makeCoinSelectionView(
-                    coin: $coinToBeCompared,
+                    coin: $coinA,
                     cachedImage: $cachedImage1,
                     placeholder: "Select Coin A",
                     isFirstCoin: true
                 )
                 
                 Button(action: {
-                    swap(&coinToBeCompared, &coinToCompareWith)
+                    swap(&coinA, &coinB)
                     swap(&cachedImage1, &cachedImage2)
                     viewModel.triggerImpactFeedback()
                 }) {
@@ -43,61 +43,70 @@ struct CryptoCompareView: View {
                         .foregroundColor(.gray)
                         .rotationEffect(.degrees(90))
                 }
-                .disabled(coinToBeCompared == nil || coinToCompareWith == nil)
+                .disabled(coinA == nil || coinB == nil)
                 
                 makeCoinSelectionView(
-                    coin: $coinToCompareWith,
+                    coin: $coinB,
                     cachedImage: $cachedImage2,
                     placeholder: "Select Coin B",
                     isFirstCoin: false
                 )
                 
-                if let coinToBeCompared, let coinToCompareWith {
-                    VStack(spacing: 16) {
-                        Picker("Price Option", selection: $selectedPriceOption) {
-                            ForEach(PriceOption.allCases, id: \.self) { option in
-                                Text("\(coinToCompareWith.symbol.uppercased()) \(option.rawValue)").tag(option)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .background(Color.gray.opacity(0.3))
-                        .cornerRadius(8)
-                        .padding(.horizontal)
-                        
-                        VStack(spacing: 8) {
-                            HStack(spacing: .zero) {
-                                Text(coinToBeCompared.symbol.uppercased())
-                                    .bold()
-                                    .foregroundColor(.white)
-                                
-                                Text(" WITH THE MARKET CAP OF ")
-                                
-                                Text(coinToCompareWith.symbol.uppercased())
-                                    .foregroundColor(.white)
-                                    .bold()
-                                
-                                Text(" \(selectedPriceOption.rawValue)")
-                                    
-                            }
-                            .font(.footnote)
-                            .foregroundColor(.gray)
-                            
-                            if let price = viewModel.calculatePrice(for: coinToBeCompared, coinToCompareWith: coinToCompareWith, option: selectedPriceOption),
-                               let multiplier = viewModel.calculateMultiplier(for: coinToBeCompared, coinToCompareWith: coinToCompareWith, option: selectedPriceOption) {
-                                HStack {
-                                    Text(price.formattedAsCurrency())
-                                        .font(.title2)
-                                        .foregroundColor(.white)
-                                    
-                                    Text(multiplier.formattedAsMultiplier())
-                                        .font(.title2)
-                                        .foregroundColor(viewModel.isPositiveMultiplier(multiplier) ? .wmGreen : .wmRed)
-                                }
-                            }
+                VStack(spacing: 16) {
+                    let symbolA = coinA?.symbol.uppercased() ?? "A"
+                    let symbolB = coinB?.symbol.uppercased() ?? "B"
+                    Picker("Price Option", selection: $selectedPriceOption) {
+                        ForEach(PriceOption.allCases, id: \.self) { option in
+                            Text("\(symbolB) \(option.rawValue)").tag(option)
                         }
                     }
-                    .padding(.top, 16)
+                    .pickerStyle(.segmented)
+                    .background(Color.gray.opacity(0.3))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+
+                    VStack(spacing: 8) {
+                        HStack(spacing: .zero) {
+                            Text(symbolA)
+                                .bold()
+                                .foregroundColor(.white)
+                            
+                            Text(" WITH THE MARKET CAP OF ")
+                            
+                            Text(symbolB)
+                                .foregroundColor(.white)
+                                .bold()
+                            
+                            Text(" \(selectedPriceOption.rawValue)")
+                        }
+                        .font(.footnote)
+                        .foregroundColor(.gray)
+
+                        let price = viewModel.calculatePrice(
+                            for: coinA,
+                            coinB: coinB,
+                            option: selectedPriceOption
+                        ) ?? .zero
+
+                        let multiplier = viewModel.calculateMultiplier(
+                            for: coinA,
+                            coinB: coinB,
+                            option: selectedPriceOption
+                        ) ?? .zero
+
+                        HStack {
+                            Text(price.formattedAsCurrency())
+                                .font(.title2)
+                                .foregroundColor(.white)
+                            
+                            let multiplierColor: Color = viewModel.isPositiveMultiplier(multiplier).map { $0 ? .wmGreen : .wmRed } ?? .gray
+                            Text(multiplier.formattedAsMultiplier())
+                                .font(.title2)
+                                .foregroundColor(multiplierColor)
+                        }
+                    }
                 }
+                .padding(.top, 16)
                 
                 Spacer()
                 
@@ -112,15 +121,15 @@ struct CryptoCompareView: View {
                 }
                 .foregroundColor(.gray)
             }
-            .padding(16)
+            .padding()
             .sheet(isPresented: $showCoinSelectionView) {
                 CoinSelectionView(mode: .selection, didSelectCoin: { selectedCoin in
                     loadAndCacheCoinImage(for: selectedCoin)
                     
                     if isSelectingFirstCoin {
-                        coinToBeCompared = selectedCoin
+                        coinA = selectedCoin
                     } else {
-                        coinToCompareWith = selectedCoin
+                        coinB = selectedCoin
                     }
                 })
             }

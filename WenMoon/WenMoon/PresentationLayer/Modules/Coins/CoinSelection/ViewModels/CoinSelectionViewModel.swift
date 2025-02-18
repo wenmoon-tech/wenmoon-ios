@@ -126,4 +126,8 @@ final class CoinSelectionViewModel: BaseViewModel {
             setError(error)
         }
     }
+    
+    func clearInputFields() {
+        searchText = ""
+    }
 }

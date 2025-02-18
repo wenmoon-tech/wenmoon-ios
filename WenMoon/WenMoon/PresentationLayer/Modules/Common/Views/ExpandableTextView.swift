@@ -28,7 +28,9 @@ struct ExpandableTextView: View {
             
             if fullTextHeight > collapsedHeight {
                 Button(action: {
-                    withAnimation { isExpanded.toggle() }
+                    withAnimation {
+                        isExpanded.toggle()
+                    }
                 }) {
                     HStack(spacing: 4) {
                         Text(isExpanded ? "Show Less" : "Show More")

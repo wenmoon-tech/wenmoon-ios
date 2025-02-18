@@ -56,20 +56,19 @@ final class PortfolioViewModel: BaseViewModel {
         let fetchedPortfolios = fetch(descriptor)
         
         if fetchedPortfolios.isEmpty {
-            let newPortfolio = Portfolio()
-            portfolios.append(newPortfolio)
-            selectedPortfolio = newPortfolio
-            insert(newPortfolio)
+            createNewPortfolio()
+            selectedPortfolio.transactions = Transaction.predefinedTransactions
+            updateAndSavePortfolio()
         } else {
             portfolios = fetchedPortfolios
             selectedPortfolio = fetchedPortfolios.first
+            updatePortfolio()
         }
-        updatePortfolio()
     }
     
     @MainActor
     func addTransaction(_ transaction: Transaction, _ coin: CoinProtocol?) async {
-        if let coin = coin as? Coin {
+        if let coin = (coin as? Coin) {
             await insertCoinIfNeeded(coin)
         }
         selectedPortfolio.transactions.append(transaction)
@@ -116,11 +115,11 @@ final class PortfolioViewModel: BaseViewModel {
     }
     
     // MARK: - Private Methods
-    private func insertCoinIfNeeded(_ coin: Coin) async {
-        guard fetchCoin(by: coin.id) == nil else { return }
-        let imageData = (coin.image != nil) ? await loadImage(from: coin.image!) : nil
-        let coinData = CoinData(from: coin, imageData: imageData)
-        insert(coinData)
+    private func createNewPortfolio() {
+        let newPortfolio = Portfolio()
+        portfolios.append(newPortfolio)
+        selectedPortfolio = newPortfolio
+        insert(newPortfolio)
     }
     
     private func updateAndSavePortfolio() {
@@ -138,6 +137,13 @@ final class PortfolioViewModel: BaseViewModel {
             return CoinTransactions(coin: coin, transactions: transactions)
         }
         .sorted { $0.totalValue > $1.totalValue }
+    }
+    
+    private func insertCoinIfNeeded(_ coin: Coin) async {
+        guard fetchCoin(by: coin.id) == nil else { return }
+        let imageData = (coin.image != nil) ? await loadImage(from: coin.image!) : nil
+        let coinData = CoinData(from: coin, imageData: imageData)
+        insert(coinData)
     }
     
     private func calculateTotalValue() -> Double {
@@ -174,7 +180,8 @@ final class PortfolioViewModel: BaseViewModel {
         var realizedValue: Double = .zero
         var remainingQuantity: Double = .zero
         
-        selectedPortfolio.transactions.forEach { transaction in
+        let sortedTransactions = selectedPortfolio.transactions.sorted { $0.date < $1.date }
+        sortedTransactions.forEach { transaction in
             let quantity = transaction.quantity ?? .zero
             let pricePerCoin = transaction.pricePerCoin ?? .zero
             
@@ -196,12 +203,13 @@ final class PortfolioViewModel: BaseViewModel {
             }
         }
         
-        let isInitialInvestmentPositive = initialInvestment > .zero
+        let isInitialInvestmentPositive = (initialInvestment > .zero)
         portfolioChangeAllTimeValue = isInitialInvestmentPositive ? ((totalValue + realizedValue) - initialInvestment) : .zero
         portfolioChangeAllTimePercentage = isInitialInvestmentPositive ? ((portfolioChangeAllTimeValue / initialInvestment) * 100) : .zero
     }
 }
 
+// MARK: - CoinTransactions
 struct CoinTransactions: Equatable {
     let coin: CoinData
     let transactions: [Date: [Transaction]]

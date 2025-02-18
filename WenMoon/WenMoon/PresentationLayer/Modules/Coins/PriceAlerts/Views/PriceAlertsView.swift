@@ -51,11 +51,12 @@ struct PriceAlertsView: View {
                 VStack(spacing: .zero) {
                     HStack(spacing: .zero) {
                         if let targetPrice {
-                            Image(viewModel.getTargetDirection(for: targetPrice).iconName)
+                            let targetDirection = viewModel.getTargetDirection(for: targetPrice)
+                            Image(targetDirection.iconName)
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 16, height: 16)
-                                .foregroundColor(.wmPink)
+                                .foregroundColor(targetDirection.color)
                         }
                         
                         TextField("Enter Target Price", value: $targetPrice, format: .number)
@@ -112,6 +113,7 @@ struct PriceAlertsView: View {
                             }
                         }
                         .listStyle(.plain)
+                        .scrollBounceBehavior(.basedOnSize)
                     }
                 }
                 .animation(.easeInOut, value: priceAlerts)
@@ -132,7 +134,7 @@ struct PriceAlertsView: View {
     private func makePriceAlertCell(_ priceAlert: PriceAlert) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 8) {
-                Text(priceAlert.symbol.uppercased())
+                Text(priceAlert.symbol)
                     .font(.body)
                 
                 HStack(spacing: 8) {

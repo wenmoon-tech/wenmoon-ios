@@ -69,6 +69,7 @@ struct SelectionView: View {
                 .opacity(option.isEnabled ? 1 : 0.5)
             }
             .listStyle(.plain)
+            .scrollBounceBehavior(.basedOnSize)
         }
     }
 }

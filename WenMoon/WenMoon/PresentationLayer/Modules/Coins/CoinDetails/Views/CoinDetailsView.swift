@@ -48,12 +48,11 @@ struct CoinDetailsView: View {
                     
                     VStack(alignment: .leading) {
                         HStack {
-                            Text(coin.symbol.uppercased())
+                            Text(coin.symbol)
                                 .font(.headline).bold()
                             
                             Text("#\(marketData.marketCapRank.formattedOrNone())")
                                 .font(.caption).bold()
-                                .animation(.easeInOut, value: marketData.marketCapRank)
                         }
                         
                         HStack {
@@ -112,7 +111,7 @@ struct CoinDetailsView: View {
                             }
                         }
                         .frame(height: 300)
-                        .padding(.top, 12)
+                        .padding(.top, 24)
                         
                         Picker("Select Timeframe", selection: $selectedTimeframe) {
                             ForEach(Timeframe.allCases, id: \.self) { timeframe in
@@ -171,6 +170,7 @@ struct CoinDetailsView: View {
                     }
                     .padding(.bottom, 16)
                 }
+                .scrollBounceBehavior(.basedOnSize)
             }
             .padding(.top, 24)
             .background(Color.black)
@@ -180,7 +180,7 @@ struct CoinDetailsView: View {
                 await viewModel.fetchChartData(on: timeframe)
             }
         }
-        .onChange(of: selectedDate) {
+        .onChange(of: selectedPrice) {
             viewModel.triggerSelectionFeedback()
         }
         .sheet(isPresented: $showMarketsView) {
@@ -216,8 +216,7 @@ struct CoinDetailsView: View {
         let priceRange = minPrice...maxPrice
         
         Chart {
-            let isPriceChangeNegative = coin.priceChangePercentage24H?.isNegative ?? false
-            let chartColor: Color = isPriceChangeNegative ? .wmRed : .wmGreen
+            let chartColor: Color = viewModel.isPriceChangeNegative ? .wmRed : .wmGreen
             ForEach(data, id: \.date) { dataPoint in
                 AreaMark(
                     x: .value("Date", dataPoint.date),
@@ -316,9 +315,9 @@ struct CoinDetailsView: View {
             Text(label)
                 .font(.caption)
                 .foregroundColor(.gray)
+            
             Text(value)
                 .font(.caption)
-                .animation(.easeInOut, value: value)
         }
     }
     

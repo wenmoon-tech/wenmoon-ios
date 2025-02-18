@@ -9,12 +9,11 @@ import SwiftUI
 
 struct CoinListView: View {
     // MARK: - Properties
-    @StateObject private var viewModel = CoinListViewModel()
+    @EnvironmentObject private var viewModel: CoinListViewModel
     
     @State private var selectedCoin: CoinData?
     @State private var swipedCoin: CoinData?
     
-    @State private var viewDidAppear = false
     @State private var showCoinSelectionView = false
     @State private var showAuthAlert = false
     
@@ -112,11 +111,6 @@ struct CoinListView: View {
                 viewModel.toggleOffPriceAlert(for: priceAlertID)
             }
         }
-        .task {
-            guard !viewDidAppear else { return }
-            await viewModel.fetchCoins()
-            viewDidAppear = true
-        }
     }
     
     // MARK: - Subviews
@@ -146,46 +140,33 @@ struct CoinListView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(coin.symbol.uppercased())
+                    Text(coin.symbol)
                         .font(.headline)
                     
-                    RollingNumberView(
-                        value: coin.marketCap,
-                        formatter: { $0.formattedWithAbbreviation(suffix: "$") },
-                        font: .caption2.bold(),
-                        foregroundColor: .gray
-                    )
+                    Text(coin.marketCap.formattedWithAbbreviation(suffix: "$"))
+                        .font(.caption2).bold()
+                        .foregroundColor(.gray)
                 }
                 .padding(.leading, 16)
                 
                 Spacer()
                 
+                let isPriceChangeNegative = coin.priceChangePercentage24H?.isNegative ?? false
                 HStack(spacing: 8) {
-                    let isPriceChangeNegative = coin.priceChangePercentage24H?.isNegative ?? false
-                    let imageName = isPriceChangeNegative ? "arrow.decrease" : "arrow.increase"
-                    Image(imageName)
+                    Image(isPriceChangeNegative ? "arrow.decrease" : "arrow.increase")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 16, height: 16)
-                        .foregroundColor(isPriceChangeNegative ? .wmRed : .wmGreen)
-                        .animation(.easeInOut, value: imageName)
                     
-                    RollingNumberView(
-                        value: coin.priceChangePercentage24H,
-                        formatter: { $0.formattedAsPercentage() },
-                        font: .caption2.bold(),
-                        foregroundColor: isPriceChangeNegative ? .wmRed : .wmGreen
-                    )
+                    Text(coin.priceChangePercentage24H.formattedAsPercentage())
+                        .font(.caption2).bold()
                 }
+                .foregroundColor(isPriceChangeNegative ? .wmRed : .wmGreen)
             }
             
-            RollingNumberView(
-                value: coin.currentPrice,
-                formatter: { $0.formattedAsCurrency() },
-                font: .footnote.bold(),
-                foregroundColor: .white
-            )
-            .padding(.trailing, 100)
+            Text(coin.currentPrice.formattedAsCurrency())
+                .font(.footnote).bold()
+                .padding(.trailing, 100)
         }
         .contentShape(Rectangle())
         .onTapGesture {
@@ -194,6 +175,7 @@ struct CoinListView: View {
         .swipeActions {
             Button(role: .destructive) {
                 Task {
+                    try await Task.sleep(for: .milliseconds(200))
                     await viewModel.deleteCoin(coin.id)
                 }
             } label: {

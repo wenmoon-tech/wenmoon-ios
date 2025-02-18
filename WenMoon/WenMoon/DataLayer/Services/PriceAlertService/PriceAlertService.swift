@@ -19,7 +19,6 @@ final class PriceAlertServiceImpl: BaseBackendService, PriceAlertService {
         do {
             let data = try await httpClient.get(path: "users/\(userID)/price-alerts", headers: ["X-Device-ID": deviceToken])
             let priceAlerts = try decoder.decode([PriceAlert].self, from: data)
-            print("Price Alerts: \(priceAlerts)")
             return priceAlerts
         } catch {
             throw mapToAPIError(error)
@@ -31,7 +30,6 @@ final class PriceAlertServiceImpl: BaseBackendService, PriceAlertService {
             let body = try encoder.encode(priceAlert)
             let data = try await httpClient.post(path: "users/\(userID)/price-alert", headers: ["X-Device-ID": deviceToken], body: body)
             let priceAlert = try decoder.decode(PriceAlert.self, from: data)
-            print("Successfully created price alert for \(priceAlert.symbol.uppercased()) with target price \(priceAlert.targetPrice)")
             return priceAlert
         } catch {
             throw mapToAPIError(error)
@@ -42,7 +40,6 @@ final class PriceAlertServiceImpl: BaseBackendService, PriceAlertService {
         do {
             let data = try await httpClient.delete(path: "users/\(userID)/price-alert/\(priceAlert.id)", headers: ["X-Device-ID": deviceToken])
             let priceAlert = try decoder.decode(PriceAlert.self, from: data)
-            print("Successfully deleted price alert for \(priceAlert.symbol.uppercased())")
             return priceAlert
         } catch {
             throw mapToAPIError(error)

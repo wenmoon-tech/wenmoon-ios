@@ -14,10 +14,7 @@ protocol CoinProtocol {
     var image: URL? { get }
     var currentPrice: Double? { get }
     var marketCap: Double? { get }
-    var marketCapRank: Int64? { get }
     var priceChangePercentage24H: Double? { get }
-    var circulatingSupply: Double? { get }
-    var ath: Double? { get }
 }
 
 struct Coin: Codable {

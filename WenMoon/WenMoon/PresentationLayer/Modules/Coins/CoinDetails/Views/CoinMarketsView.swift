@@ -33,6 +33,7 @@ struct CoinMarketsView: View {
                         makeMarketRow(ticker)
                     }
                     .listStyle(.plain)
+                    .scrollBounceBehavior(.basedOnSize)
                 }
             }
             .navigationTitle("Markets")
@@ -45,9 +46,13 @@ struct CoinMarketsView: View {
                 }
             }
             .if(viewModel.tickers.count >= 20) { view in
-                view.searchable(text: $viewModel.searchText, placement: .toolbar, prompt: "e.g. Coinbase")
-                    .searchFocused($isTextFieldFocused)
-                    .scrollDismissesKeyboard(.immediately)
+                view.searchable(
+                    text: $viewModel.searchText,
+                    placement: .navigationBarDrawer(displayMode: .always),
+                    prompt: "e.g. Binance"
+                )
+                .searchFocused($isTextFieldFocused)
+                .scrollDismissesKeyboard(.immediately)
             }
         }
         .simultaneousGesture(

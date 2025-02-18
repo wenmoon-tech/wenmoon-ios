@@ -26,6 +26,7 @@ struct AccountView: View {
                     }
                 }
                 .listStyle(.plain)
+                .scrollBounceBehavior(.basedOnSize)
                 
                 Spacer()
                 

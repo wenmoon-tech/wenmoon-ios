@@ -17,11 +17,9 @@ struct LinksView: View {
     @State private var showingActionSheet = false
     
     var body: some View {
-        ScrollView {
-            FlowLayout() {
-                ForEach(Array(generateLinkButtons().enumerated()), id: \.offset) { _, view in
-                    view
-                }
+        FlowLayout() {
+            ForEach(Array(generateLinkButtons().enumerated()), id: \.offset) { _, view in
+                view
             }
         }
         .confirmationDialog("Select a Link", isPresented: $showingActionSheet, titleVisibility: .visible) {

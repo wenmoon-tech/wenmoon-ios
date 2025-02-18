@@ -17,6 +17,14 @@ final class CoinDetailsViewModel: BaseViewModel {
     
     var chartDataCache: [Timeframe: [ChartData]] = [:]
     
+    var isPriceChangeNegative: Bool {
+        guard let firstPrice = chartData.first?.price,
+              let lastPrice = chartData.last?.price else {
+            return false
+        }
+        return lastPrice < firstPrice
+    }
+    
     // MARK: - Initializers
     convenience init(coin: CoinData) {
         self.init(coin: coin, coinScannerService: CoinScannerServiceImpl())

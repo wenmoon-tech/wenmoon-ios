@@ -54,21 +54,8 @@ struct CoinSelectionView: View {
                                 ProgressView()
                             }
                         }
+                        .scrollBounceBehavior(.basedOnSize)
                     }
-                    .navigationTitle(mode == .toggle ? "Select Coins" : "Select Coin")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("Close") { dismiss() }
-                        }
-                    }
-                    .searchable(
-                        text: $viewModel.searchText,
-                        placement: .toolbar,
-                        prompt: "e.g. Bitcoin"
-                    )
-                    .searchFocused($isTextFieldFocused)
-                    .scrollDismissesKeyboard(.immediately)
                     
                     if viewModel.isLoading && !viewModel.isLoadingMoreItems {
                         ProgressView()
@@ -78,6 +65,20 @@ struct CoinSelectionView: View {
                         PlaceholderView(text: "No coins found")
                     }
                 }
+                .navigationTitle(mode == .toggle ? "Select Coins" : "Select Coin")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Close") { dismiss() }
+                    }
+                }
+                .searchable(
+                    text: $viewModel.searchText,
+                    placement: .navigationBarDrawer(displayMode: .always),
+                    prompt: "e.g. Bitcoin"
+                )
+                .searchFocused($isTextFieldFocused)
+                .scrollDismissesKeyboard(.immediately)
             }
         }
         .simultaneousGesture(
@@ -90,6 +91,9 @@ struct CoinSelectionView: View {
         }
         .onAppear {
             viewModel.fetchSavedCoins()
+        }
+        .onDisappear {
+            viewModel.clearInputFields()
         }
     }
     

@@ -5,7 +5,7 @@
 //  Created by Artur Tkachenko on 23.05.23.
 //
 
-import Foundation
+import SwiftUI
 
 struct PriceAlert: Codable, Hashable {
     enum TargetDirection: String, Codable {
@@ -14,10 +14,15 @@ struct PriceAlert: Codable, Hashable {
         
         var iconName: String {
             switch self {
-            case .above:
-                return "arrow.increase"
-            case .below:
-                return "arrow.decrease"
+            case .above: return "arrow.increase"
+            case .below: return "arrow.decrease"
+            }
+        }
+        
+        var color: Color {
+            switch self {
+            case .above: return .wmGreen
+            case .below: return .wmRed
             }
         }
     }

@@ -11,7 +11,6 @@
 		191DCD492D2805CC00892757 /* Release.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 191DCD472D2805CC00892757 /* Release.xcconfig */; };
 		191DCD4B2D2805D900892757 /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 191DCD4A2D2805D900892757 /* Debug.xcconfig */; };
 		191DCD4C2D2805D900892757 /* Debug.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 191DCD4A2D2805D900892757 /* Debug.xcconfig */; };
-		194212A32D58F86C008DE753 /* RollingNumberView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 194212A22D58F86C008DE753 /* RollingNumberView.swift */; };
 		194212A52D5A4930008DE753 /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 194212A42D5A4930008DE753 /* String+Extensions.swift */; };
 		194212A72D5BB250008DE753 /* LinksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 194212A62D5BB250008DE753 /* LinksView.swift */; };
 		194212A92D5D0D37008DE753 /* ExpandableTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 194212A82D5D0D37008DE753 /* ExpandableTextView.swift */; };
@@ -140,7 +139,6 @@
 /* Begin PBXFileReference section */
 		191DCD472D2805CC00892757 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		191DCD4A2D2805D900892757 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
-		194212A22D58F86C008DE753 /* RollingNumberView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RollingNumberView.swift; sourceTree = "<group>"; };
 		194212A42D5A4930008DE753 /* String+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Extensions.swift"; sourceTree = "<group>"; };
 		194212A62D5BB250008DE753 /* LinksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinksView.swift; sourceTree = "<group>"; };
 		194212A82D5D0D37008DE753 /* ExpandableTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableTextView.swift; sourceTree = "<group>"; };
@@ -712,7 +710,6 @@
 			children = (
 				198655052D30394F00216097 /* CoinImageView.swift */,
 				1961B51E2D34407600D0CEBC /* PlaceholderView.swift */,
-				194212A22D58F86C008DE753 /* RollingNumberView.swift */,
 				194212A62D5BB250008DE753 /* LinksView.swift */,
 				194212A82D5D0D37008DE753 /* ExpandableTextView.swift */,
 			);
@@ -1233,7 +1230,6 @@
 				D28C18502D0B270000291920 /* GlobalMarketData.swift in Sources */,
 				D28558492CF8B43C0023A2D5 /* PriceAlertsView.swift in Sources */,
 				D2EFF90E2CDD1129004AA5A5 /* CoinDetailsView.swift in Sources */,
-				194212A32D58F86C008DE753 /* RollingNumberView.swift in Sources */,
 				FA8A08902A1CFD040083B8DB /* UserDefaultsManager.swift in Sources */,
 				194212B42D5FB381008DE753 /* CoinDetails+MarketData.swift in Sources */,
 				D2AAC1EE2CCFD17B00CBAFB0 /* Color+Extensions.swift in Sources */,
